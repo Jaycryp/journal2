@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JOURNAL://caprigoat</title>
+<style>
+  :root {
+    --bg: #050807;
+    --panel: #0a0f0c;
+    --line: #16241b;
+    --neon: #39ff88;
+    --neon-dim: #1d7a46;
+    --amber: #ffb000;
+    --red: #ff4444;
+    --text: #b8ffd4;
+    --muted: #4a7a5e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(57,255,136,0.02) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+    z-index: 999;
+  }
+  .wrap { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .side {
+    width: 200px; flex-shrink: 0;
+    border-right: 1px solid var(--line);
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .logo { color: var(--neon); font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; text-shadow: 0 0 10px rgba(57,255,136,0.5); }
+  .logo-sub { color: var(--muted); font-size: 0.65rem; margin-bottom: 20px; }
+  .nav-item {
+    padding: 9px 12px; font-size: 0.78rem; color: var(--muted);
+    border: 1px solid transparent; cursor: pointer; border-radius: 4px;
+    display: flex; justify-content: space-between;
+  }
+  .nav-item.active { color: var(--neon); border-color: var(--neon-dim); background: rgba(57,255,136,0.06); }
+  .nav-item:hover { color: var(--neon); }
+  .side-foot { margin-top: auto; font-size: 0.6rem; color: var(--muted); }
+  .side-foot a { color: var(--neon-dim); text-decoration: none; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 20px; max-width: 860px; }
+
+  /* COUNTDOWN */
+  .countdown {
+    border: 1px solid var(--neon-dim); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 18px;
+    background: linear-gradient(135deg, rgba(57,255,136,0.08), transparent);
+  }
+  .cd-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.15em; }
+  .cd-name { color: var(--neon); font-weight: 700; margin: 4px 0 8px; text-shadow: 0 0 8px rgba(57,255,136,0.4); }
+  .cd-timer { display: flex; gap: 14px; }
+  .cd-unit { text-align: center; }
+  .cd-unit .v { font-size: 1.5rem; font-weight: 700; color: var(--neon); text-shadow: 0 0 12px rgba(57,255,136,0.6); }
+  .cd-unit .u { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; }
+  .cd-none { color: var(--muted); font-size: 0.8rem; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat {
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+    background: var(--panel); text-align: center;
+  }
+  .stat .n { font-size: 1.3rem; font-weight: 700; color: var(--neon); }
+  .stat .l { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* PANELS */
+  .panel {
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--panel); padding: 16px; margin-bottom: 18px;
+  }
+  .panel-title { color: var(--neon); font-size: 0.8rem; margin-bottom: 12px; }
+  .panel-title::before { content: '> '; color: var(--muted); }
+
+  label { display: block; font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin: 10px 0 4px; }
+  input, textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 4px; color: var(--text); padding: 9px 11px;
+    font-size: 0.85rem; font-family: inherit;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 8px rgba(57,255,136,0.15); }
+  textarea { min-height: 60px; resize: vertical; }
+  .btn {
+    width: 100%; margin-top: 14px; padding: 11px;
+    background: var(--neon); color: #04100a; border: none; border-radius: 4px;
+    font-family: inherit; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .btn:active { opacity: 0.85; }
+
+  /* PROJECT CARDS */
+  .proj {
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--panel); padding: 14px; margin-bottom: 12px;
+  }
+  .proj.done { opacity: 0.55; }
+  .proj-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .proj-name { font-weight: 700; font-size: 0.95rem; }
+  .proj-name a { color: var(--neon); text-decoration: none; }
+  .proj-name a:hover { text-shadow: 0 0 8px rgba(57,255,136,0.6); }
+  .proj-dl { font-size: 0.65rem; color: var(--amber); margin-top: 3px; }
+  .proj-dl.overdue { color: var(--red); }
+  .icon-btns { display: flex; gap: 4px; }
+  .icon-btn { background: none; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); cursor: pointer; padding: 4px 8px; font-size: 0.75rem; }
+  .icon-btn:hover { color: var(--neon); border-color: var(--neon-dim); }
+  .wallet-line { font-size: 0.68rem; color: var(--muted); word-break: break-all; margin-top: 8px; }
+
+  .task-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .task-row:last-of-type { border-bottom: none; }
+  .task-name { flex: 1; font-size: 0.82rem; }
+  .badge { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; cursor: pointer; border: 1px solid; background: none; font-family: inherit; }
+  .badge.pending { color: var(--amber); border-color: var(--amber); }
+  .badge.completed { color: var(--neon); border-color: var(--neon); }
+  .badge.missed { color: var(--red); border-color: var(--red); }
+  .add-task { display: flex; gap: 8px; margin-top: 10px; }
+  .add-task input { flex: 1; }
+  .add-task button { background: var(--line); color: var(--neon); border: none; border-radius: 4px; padding: 0 14px; cursor: pointer; font-size: 1rem; }
+
+  .notes-area { margin-top: 10px; font-size: 0.78rem; min-height: 40px; background: transparent; border-color: transparent; color: var(--muted); }
+  .notes-area:focus { border-color: var(--line); color: var(--text); }
+  .tx-link { display: block; font-size: 0.7rem; color: var(--neon-dim); margin-top: 6px; word-break: break-all; }
+
+  .warn { border: 1px solid var(--red); border-radius: 6px; padding: 8px 12px; font-size: 0.68rem; color: var(--red); margin-bottom: 16px; background: rgba(255,68,68,0.05); }
+  .empty { text-align: center; color: var(--muted); padding: 28px 0; font-size: 0.8rem; }
+  .tools { display: flex; gap: 8px; margin-top: 4px; }
+  .tool-btn { flex: 1; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 4px; padding: 8px; font-family: inherit; font-size: 0.65rem; cursor: pointer; text-transform: uppercase; }
+  .tool-btn:hover { color: var(--neon); border-color: var(--neon-dim); }
+
+  @media (max-width: 640px) {
+    .wrap { flex-direction: column; }
+    .side { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; border-right: none; border-bottom: 1px solid var(--line); padding: 12px; }
+    .logo { margin-bottom: 0; }
+    .logo-sub, .side-foot { display: none; }
+    .nav-item { padding: 6px 10px; }
+    .cd-unit .v { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="side">
+    <div>
+      <div class="logo">JOURNAL://</div>
+      <div class="logo-sub">airdrop_tracking_v1</div>
+    </div>
+    <div class="nav-item active" data-filter="all" onclick="setFilter('all', this)">all_projects <span id="cAll">0</span></div>
+    <div class="nav-item" data-filter="active" onclick="setFilter('active', this)">active <span id="cActive">0</span></div>
+    <div class="nav-item" data-filter="done" onclick="setFilter('done', this)">completed <span id="cDone">0</span></div>
+    <div class="side-foot">built by <a href="index.html">caprigoat</a> · local_only</div>
+  </nav>
+
+  <main class="main">
+
+    <div class="warn">⚠ PUBLIC ADDRESSES ONLY. Never paste seed phrases or private keys. Ever.</div>
+
+    <div class="countdown" id="countdown"></div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="sProjects">0</div><div class="l">projects</div></div>
+      <div class="stat"><div class="n" id="sDone">0</div><div class="l">tasks_done</div></div>
+      <div class="stat"><div class="n" id="sRate">0%</div><div class="l">completion</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">new_project</div>
+      <label>name *</label>
+      <input id="pName" placeholder="e.g. Curvance">
+      <label>link</label>
+      <input id="pLink" placeholder="https://...">
+      <label>deadline</label>
+      <input id="pDeadline" type="date">
+      <label>test wallet (public address only)</label>
+      <input id="pWallet" placeholder="0x...">
+      <label>notes</label>
+      <textarea id="pNotes" placeholder="bugs found, feedback sent, observations..."></textarea>
+      <label>transaction link</label>
+      <input id="pTx" placeholder="https://explorer.../tx/...">
+      <button class="btn" onclick="addProject()">[ add project ]</button>
+    </div>
+
+    <div id="list"></div>
+
+    <div class="tools">
+      <button class="tool-btn" onclick="exportData()">⬇ backup json</button>
+      <button class="tool-btn" onclick="document.getElementById('importFile').click()">⬆ restore json</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+
+  </main>
+</div>
+
+<script>
+let projects = JSON.parse(localStorage.getItem('caprigoat_journal') || '[]');
+let filter = 'all';
+
+function save() {
+  localStorage.setItem('caprigoat_journal', JSON.stringify(projects));
+  render();
+}
+
+function setFilter(f, el) {
+  filter = f;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function addProject() {
+  const name = document.getElementById('pName').value.trim();
+  if (!name) { alert('Project needs a name'); return; }
+  projects.unshift({
+    id: Date.now(),
+    name: name,
+    link: document.getElementById('pLink').value.trim(),
+    deadline: document.getElementById('pDeadline').value,
+    wallet: document.getElementById('pWallet').value.trim(),
+    notes: document.getElementById('pNotes').value.trim(),
+    tx: document.getElementById('pTx').value.trim(),
+    done: false,
+    tasks: []
+  });
+  ['pName','pLink','pDeadline','pWallet','pNotes','pTx'].forEach(id => document.getElementById(id).value = '');
+  save();
+}
+
+function toggleDone(id) {
+  const p = projects.find(p => p.id === id);
+  p.done = !p.done;
+  save();
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project and all its tasks?')) return;
+  projects = projects.filter(p => p.id !== id);
+  save();
+}
+
+function addTask(id) {
+  const input = document.getElementById('task-' + id);
+  const name = input.value.trim();
+  if (!name) return;
+  projects.find(p => p.id === id).tasks.push({ name: name, status: 'pending' });
+  input.value = '';
+  save();
+}
+
+function cycleStatus(id, i) {
+  const order = ['pending', 'completed', 'missed'];
+  const t = projects.find(p => p.id === id).tasks[i];
+  t.status = order[(order.indexOf(t.status) + 1) % 3];
+  save();
+}
+
+function deleteTask(id, i) {
+  projects.find(p => p.id === id).tasks.splice(i, 1);
+  save();
+}
+
+function saveNotes(id, el) {
+  projects.find(p => p.id === id).notes = el.value;
+  localStorage.setItem('caprigoat_journal', JSON.stringify(projects));
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(projects, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'journal_backup.json';
+  a.click();
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      projects = JSON.parse(ev.target.result);
+      save();
+      alert('Backup restored');
+    } catch (err) { alert('Invalid file'); }
+  };
+  reader.readAsText(file);
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function nearestDeadline() {
+  const now = new Date(); now.setHours(0,0,0,0);
+  let best = null;
+  projects.forEach(p => {
+    if (!p.deadline || p.done) return;
+    const d = new Date(p.deadline + 'T00:00:00');
+    if (d >= now && (!best || d < best.date)) best = { date: d, name: p.name };
+  });
+  return best;
+}
+
+function tickCountdown() {
+  const el = document.getElementById('countdown');
+  const best = nearestDeadline();
+  if (!best) {
+    el.innerHTML = '<div class="cd-label">next_deadline</div><div class="cd-none">// no upcoming deadlines — add a project with a date</div>';
+    return;
+  }
+  const diff = best.date - new Date();
+  const days = Math.floor(diff / 86400000);
+  const hrs = Math.floor(diff % 86400000 / 3600000);
+  const min = Math.floor(diff % 3600000 / 60000);
+  const sec = Math.floor(diff % 60000 / 1000);
+  el.innerHTML =
+    '<div class="cd-label">next_deadline</div>' +
+    '<div class="cd-name">' + esc(best.name) + '</div>' +
+    '<div class="cd-timer">' +
+      '<div class="cd-unit"><div class="v">' + days + '</div><div class="u">days</div></div>' +
+      '<div class="cd-unit"><div class="v">' + String(hrs).padStart(2,'0') + '</div><div class="u">hrs</div></div>' +
+      '<div class="cd-unit"><div class="v">' + String(min).padStart(2,'0') + '</div><div class="u">min</div></div>' +
+      '<div class="cd-unit"><div class="v">' + String(sec).padStart(2,'0') + '</div><div class="u">sec</div></div>' +
+    '</div>';
+}
+
+function render() {
+  let totalTasks = 0, doneTasks = 0;
+  projects.forEach(p => {
+    totalTasks += p.tasks.length;
+    doneTasks += p.tasks.filter(t => t.status === 'completed').length;
+  });
+
+  document.getElementById('sProjects').textContent = projects.length;
+  document.getElementById('sDone').textContent = doneTasks;
+  document.getElementById('sRate').textContent = totalTasks === 0 ? '0%' : Math.round(doneTasks / totalTasks * 100) + '%';
+  document.getElementById('cAll').textContent = projects.length;
+  document.getElementById('cActive').textContent = projects.filter(p => !p.done).length;
+  document.getElementById('cDone').textContent = projects.filter(p => p.done).length;
+
+  let shown = projects;
+  if (filter === 'active') shown = projects.filter(p => !p.done);
+  if (filter === 'done') shown = projects.filter(p => p.done);
+
+  const list = document.getElementById('list');
+  if (shown.length === 0) {
+    list.innerHTML = '<div class="empty">// nothing here yet</div>';
+    return;
+  }
+
+  list.innerHTML = shown.map(p => {
+    let dlHtml = '';
+    if (p.deadline) {
+      const overdue = new Date(p.deadline) < new Date() && !p.done;
+      dlHtml = '<div class="proj-dl' + (overdue ? ' overdue' : '') + '">⏰ ' + p.deadline + (overdue ? ' [OVERDUE]' : '') + '</div>';
+    }
+
+    const tasksHtml = p.tasks.map((t, i) =>
+      '<div class="task-row">' +
+        '<span class="task-name">' + esc(t.name) + '</span>' +
+        '<button class="badge ' + t.status + '" onclick="cycleStatus(' + p.id + ',' + i + ')">' + t.status + '</button>' +
+        '<button class="icon-btn" onclick="deleteTask(' + p.id + ',' + i + ')">×</button>' +
+      '</div>'
+    ).join('');
+
+    return '<div class="proj' + (p.done ? ' done' : '') + '">' +
+      '<div class="proj-top">' +
+        '<div>' +
+          '<div class="proj-name">' + (p.link ? '<a href="' + esc(p.link) + '" target="_blank">' + esc(p.name) + ' ↗</a>' : esc(p.name)) + '</div>' +
+          dlHtml +
+        '</div>' +
+        '<div class="icon-btns">' +
+          '<button class="icon-btn" onclick="toggleDone(' + p.id + ')">' + (p.done ? '↩' : '✓') + '</button>' +
+          '<button class="icon-btn" onclick="deleteProject(' + p.id + ')">🗑</button>' +
+        '</div>' +
+      '</div>' +
+      (p.wallet ? '<div class="wallet-line">👛 ' + esc(p.wallet) + '</div>' : '') +
+      tasksHtml +
+      '<div class="add-task"><input id="task-' + p.id + '" placeholder="add task..."><button onclick="addTask(' + p.id + ')">+</button></div>' +
+      '<textarea class="notes-area" placeholder="// notes..." onchange="saveNotes(' + p.id + ', this)">' + esc(p.notes) + '</textarea>' +
+      (p.tx ? '<a class="tx-link" href="' + esc(p.tx) + '" target="_blank">🔗 tx ↗</a>' : '') +
+    '</div>';
+  }).join('');
+}
+
+render();
+setInterval(tickCountdown, 1000);
+tickCountdown();
+</script>
+
+</body>
+  </html>
